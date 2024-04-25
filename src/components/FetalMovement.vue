@@ -5,8 +5,8 @@
     </van-row>
     <van-divider />
     <van-cell-group>
-      <van-cell title="有效次数" :value="totalCount"/>
-      <van-cell title="总次数" :value="validCount"/>
+      <van-cell title="有效次数" :value="info.validCount"/>
+      <van-cell title="总次数" :value="info.totalCount"/>
     </van-cell-group>
     <van-count-down class="box" ref="countDown" :time="remainingTime" @finish="endCounting">
       <template #default="timeData">
@@ -16,79 +16,99 @@
       </template>
     </van-count-down>
     <van-grid :column-num="3" clickable>
-      <van-grid-item text="开始计时" icon="play-circle-o" @click="startTimer" />
+      <van-grid-item text="开始计时" icon="play-circle-o" @click="startTimer(false)" />
       <van-grid-item text="动一下，点一下" icon="like" @click="count" />
-      <van-grid-item text="结束计时" icon="stop-circle-o" @click="endCounting" />
+      <van-grid-item text="重新计时" icon="replay" @click="startTimer(true)" />
     </van-grid>
      
 </div>
 </template>
 
 <script>
-import axios from 'axios';
 
 export default {
   name: 'FetalMovement',
-
+  created() {
+    // 获得已有的日期
+    let localStartTime = localStorage.getItem("startTime")
+    // 并不存在开始时间，直接返回
+    if (localStartTime == null) {
+      return
+    }
+    let overTime = new Date().getTime() - localStartTime
+    // 如果当前时间没超过已有日期一小时，则读取旧数据
+    if (localStartTime != null && overTime < 3600000) {
+      this.isTimerRunning = true
+      this.info = JSON.parse(localStorage.getItem("info"))
+      this.remainingTime = 3600000 - overTime
+    }
+  },
+  mounted() {
+    if(this.isTimerRunning) {
+      this.$refs.countDown.reset()
+      this.$refs.countDown.start()
+    }
+  },
   data() {
     return {
       isTimerRunning: false,
+      info: {
+        userId: 0,
+        startTime: 0,
+        totalCount: 0,
+        validCount: 0,
+        clickRecords: [],
+        lastValidTime: 0
+      },
       remainingTime: 0,
-      startTime: 0,
-      totalCount: 0,
-      validCount: 0,
-      validIntervalMinute: 2, 
-      lastValidTime: new Date(),
-      clickRecords: []
-    };
+      validIntervalMinute: 2
+    }
   },
   methods: {
-    startTimer() {
-      this.isTimerRunning = true
-      this.totalCount = 0
-      this.validCount = 0
-      this.startTime = new Date()
-      this.clickRecords = []
-      this.remainingTime = 3600000
-      this.$refs.countDown.reset()
-      this.$refs.countDown.start();
+    startTimer(force = false) {
+      if (!this.isTimerRunning || force) {
+        // 初始化计时器
+        this.isTimerRunning = true
+        this.info.totalCount = 0
+        this.info.validCount = 0
+        this.info.startTime = new Date().getTime()
+        this.info.clickRecords = []
+        this.remainingTime = 3600000
+        this.$refs.countDown.reset()
+        this.$refs.countDown.start()
+        // 存入localStorage
+        localStorage.setItem("startTime", this.info.startTime)
+        localStorage.setItem("info", JSON.stringify(this.info))
+      }
     },
     count() {
       if (!this.isTimerRunning) {
         return
       }
-      this.totalCount++
-      const clickTime = new Date()
-      this.clickRecords.push({
+      this.info.totalCount = this.info.totalCount + 1
+      const clickTime = new Date().getTime()
+      this.info.clickRecords.push({
         userId: 0,
-        clickTime: clickTime.getTime()
+        clickTime: clickTime
       })
       // 计算有效点击次数: 第一次点击或者这一次点击距离上一次有效点击间隔自定义间隔以上
-      if ( this.clickRecords.length == 1 || (clickTime.getTime() - this.lastValidTime.getTime()) / 1000 >= this.validIntervalMinute * 60) {
-        this.validCount++
-        this.lastValidTime = clickTime
+      if ( this.info.clickRecords.length == 1 || (clickTime - this.info.lastValidTime) / 1000 >= this.validIntervalMinute * 60) {
+        this.info.validCount++
+        this.info.lastValidTime = clickTime
       }
+      localStorage.setItem("info", JSON.stringify(this.info))
     },
     endCounting() {
-      clearInterval(this.timerInterval);
       this.isTimerRunning = false;
       this.$refs.countDown.pause();
-
       // 将记录数据发送到后台
-      axios.post('http://localhost:520/babycare/fetalMovement/record', {
-        userId: 0,
-        startTime: this.startTime.getTime(),
-        endTime: new Date().getTime(),
-        totalCount: this.totalCount,
-        validCount: this.validCount,
-        clickRecords: this.clickRecords
-      })
-      .then(response => {
-        console.log(response.data);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      });
+      // axios.post('http://localhost:520/babycare/fetalMovement/record', this.info)
+      // .then(response => {
+      //   console.log(response.data);
+      // })
+      // .catch(error => {
+      //  console.error('Error:', error);
+      // });
     }
   }
 }
