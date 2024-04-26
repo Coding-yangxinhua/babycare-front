@@ -25,7 +25,9 @@
     </van-row>
     <van-row class="todayFetal">
       <van-row>
-        <van-divider >今日胎动  <van-icon name="exchange" /></van-divider>
+        <router-link to="/list">
+          <van-divider >今日胎动  <van-icon name="exchange" /></van-divider>
+        </router-link>
       </van-row>
       <div class="plan_box">
         <table>
