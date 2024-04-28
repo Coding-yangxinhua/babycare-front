@@ -1,15 +1,14 @@
 <template>
   <div id="app">
-    <FetalMovement />
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
-import FetalMovement from './components/FetalMovement.vue'
 export default {
   name: 'App',
   components: {
-    FetalMovement
+    
   }
 }
 </script>

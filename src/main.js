@@ -5,7 +5,7 @@ import VueRouter from 'vue-router';
 
 import 'vant/lib/index.css';
 import FetalMovement from './components/FetalMovement.vue';
-import FetalMovementList from './components/FetalMovementList.vue';
+import FetalMovementList from './components/FetalMovementBill.vue';
 
 Vue.use(Vant);
 Vue.use(VueRouter);
@@ -17,7 +17,7 @@ Vue.config.productionTip = false
 // 定义路由映射
 const routes = [
   { path: '/', component: FetalMovement },
-  { path: '/list', component: FetalMovementList },
+  { path: '/bill', component: FetalMovementList },
   // 更多路由
 ];
 

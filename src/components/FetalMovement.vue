@@ -25,7 +25,7 @@
     </van-row>
     <van-row class="todayFetal">
       <van-row>
-        <van-divider >今日胎动  <van-icon name="exchange" /></van-divider>
+        <van-divider >今日胎动 <router-link to="/bill"><van-icon name="exchange" /></router-link></van-divider>
       </van-row>
       <div class="plan_box">
         <table>
@@ -158,19 +158,20 @@ export default {
     endCounting(upload = true) {
       this.isTimerRunning = false;
       this.$refs.countDown.pause();
+      this.fetalInfo.endTime = new Date()
       if (upload) {
         // 将记录数据发送到后台
         axios.post('http://localhost:520/babycare/fetalMovement/record', this.fetalInfo)
           .then(() => {
             Notify({
               message: '上传记录成功',
-              background: '#ffe1e1'
+              background: '#7cee0a98'
             });
           })
           .catch(() => {
             Notify({
               message: '上传记录失败',
-              background: '#f41a3398'
+              background: '#ffe1e1'
             });
           })
       }
