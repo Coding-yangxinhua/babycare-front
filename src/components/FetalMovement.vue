@@ -137,10 +137,11 @@ export default {
         userId: 0,
         clickTime: clickTime
       })
+      this.fetalInfo.lastValidTime = clickTime
+
       // 计算有效点击次数: 第一次点击或者这一次点击距离上一次有效点击间隔自定义间隔以上
       if (this.fetalInfo.clickRecords.length == 1 || (clickTime - this.fetalInfo.lastValidTime) / 1000 >= this.validIntervalMinute * 60) {
         this.fetalInfo.validCount++
-        this.fetalInfo.lastValidTime = clickTime
       }
       localStorage.setItem("fetalInfo", JSON.stringify(this.fetalInfo))
     },
