@@ -159,7 +159,7 @@ export default {
     endCounting(upload = true) {
       this.isTimerRunning = false;
       this.$refs.countDown.pause();
-      this.fetalInfo.endTime = new Date()
+      this.fetalInfo.endTime = new Date().getTime()
       if (upload) {
         // 将记录数据发送到后台
         axios.post('http://localhost:520/babycare/fetalMovement/record', this.fetalInfo)
@@ -168,6 +168,8 @@ export default {
               message: '上传记录成功',
               background: '#7cee0a98'
             });
+            this.getTodayFetal()
+            localStorage.setItem("startTime", null)
           })
           .catch(() => {
             Notify({
