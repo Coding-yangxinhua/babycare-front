@@ -36,7 +36,8 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '../api/api'
+
 export default {
   name: 'FetalMovement',
   created() {
@@ -69,8 +70,8 @@ export default {
   },
   methods: {
     async searchRecords() {
-      const resp = await axios.get(`http://localhost:520/babycare/fetalMovement/search`)
-      const data = this.historyFetalRecords = resp.data.result
+      const resp = await api.get(`/fetalMovement/search`)
+      const data = this.historyFetalRecords = resp.result
       this.maxDate = data.length > 0? new Date(data[0].date) : new Date()
       this.minDate = data.length > 0? new Date(data[data.length - 1].date) : new Date()
       

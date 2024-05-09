@@ -51,10 +51,9 @@
 </template>
 
 <script>
-import axios from 'axios'
 
 import { Dialog, Notify } from 'vant'
-
+import api from '../api/api'
 export default {
   name: 'FetalMovement',
   created() {
@@ -75,6 +74,7 @@ export default {
     this.getTodayFetal()
   },
   mounted() {
+    console.log(process.env.VUE_APP_BASE_URL, "生产环境VUE_APP_URL");
     if (this.isTimerRunning) {
       this.$refs.countDown.reset()
       this.$refs.countDown.start()
@@ -108,8 +108,8 @@ export default {
   },
   methods: {
     async getTodayFetal() {
-      const resp = await axios.get('http://localhost:520/babycare/fetalMovement/today', this.fetalInfo)
-      this.todayFetalRecords = resp.data.result 
+      const resp = await api.get('/fetalMovement/today', this.fetalInfo)
+      this.todayFetalRecords = resp.result 
     },
     startTimer(force = false) {
       if (!this.isTimerRunning || force) {
@@ -137,13 +137,14 @@ export default {
         userId: 0,
         clickTime: clickTime
       })
-      this.fetalInfo.lastValidTime = clickTime
-
       // 计算有效点击次数: 第一次点击或者这一次点击距离上一次有效点击间隔自定义间隔以上
       if (this.fetalInfo.clickRecords.length == 1 || (clickTime - this.fetalInfo.lastValidTime) / 1000 >= this.validIntervalMinute * 60) {
         this.fetalInfo.validCount++
       }
+      // 更新点击时间
+      this.fetalInfo.lastValidTime = clickTime
       localStorage.setItem("fetalInfo", JSON.stringify(this.fetalInfo))
+
     },
     preEndCounting() {
       Dialog.confirm({
@@ -162,7 +163,7 @@ export default {
       this.fetalInfo.endTime = new Date().getTime()
       if (upload) {
         // 将记录数据发送到后台
-        axios.post('http://localhost:520/babycare/fetalMovement/record', this.fetalInfo)
+        api.post('/fetalMovement/record', this.fetalInfo)
           .then(() => {
             Notify({
               message: '上传记录成功',
